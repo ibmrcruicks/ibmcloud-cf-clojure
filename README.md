@@ -1,6 +1,8 @@
 # ibmcloud-cf-clojure
 Clojure functional programming in Cloud Foundry
 
+![logo](https://upload.wikimedia.org/wikipedia/commons/8/85/Clojure-icon.png) ![logo](https://pbs.twimg.com/profile_images/1151235235968716800/VJI_bxtd_400x400.jpg)
+
 Get a simple [Clojure](https://clojure.org) web app running in Cloud Foundry on IBM Cloud.
 
 After watching [Russ Olsen at goto18 on YouTube](https://www.youtube.com/watch?v=0if71HOyVjY), I thought I would go
@@ -26,9 +28,9 @@ This folder contains a `project.clj` file, which is compatible with the [heroku 
 There are two files that make up the sample web app
 
 + `src/hello-world/service.clj` - settings, routes and config for the app
-+ `src/hello-world/server.clj' - the application that listens for 'hello' requests
++ `src/hello-world/server.clj` - the application that listens for 'hello' requests
 
-The default setting for `http/port` in service.clj is 8080 -- this is *usually* the port number passed to Cloud Foundry applications, but it can vary; for completeness, we'll add support for that variability by replacing:
+The default setting for `http/port` in service.clj is 8080 -- this is *usually* the port number passed to Cloud Foundry applications via the **PORT** environment variable, but it can vary; for completeness, we'll add support for that variability by replacing:
 ```
   ::http/port   8080
 ```
@@ -38,7 +40,7 @@ with:
 ```
 (**read-string** is needed to convert the PORT value from string to number)
 
-Also worth noting that despite what all the Cloud Foundry doc samples suggest, trying to push an application which binds to a TCP port on *localhost* will not work - the server host needs to be unspecified, or set to **"0.0.0.0"**. For that reason, the default bind address for this app needs to be set in the same way:
+Also worth noting is that despite what all the Cloud Foundry doc samples suggest, trying to push an application which binds to a TCP port on *localhost* will not work - the server host needs to be unspecified, or set to **"0.0.0.0"**. For that reason, the default bind address for the app needs to be set in the same way, with awareness of the **VCAP_APP_HOST** environment variable provided by Cloud Foundry:
 ```
   ::http/host   (or (System/getenv "VCAP_APP_HOST") "0.0.0.0")
 ```
@@ -53,11 +55,11 @@ We need to specify a couple of parameters:
 + the buildpack option, pointing to the Heroku/Cloud Foundry repository
 + the memory size option - set to 256MB to ensure the app will run within the default limit for IBM Cloud Lite accounts (the default for the buildpack is 1GB!)
 
-```
-ibmcloud cf push my-first-cf-clojure-app -m256m -b https://github.com/heroku/heroku-buildpack-clojure.git 
-```
 
-Run the `cf apps` command to get the fully-qualified hostname for your application; from a browser connect to "**https://**`<your-app-hostname>`**/hello?name=me**", and you should see something like:
+`ibmcloud cf push <`*your-app-name*`> -m256m -b https://github.com/heroku/heroku-buildpack-clojure.git` 
+
+
+Run the `cf apps` command to get the fully-qualified hostname for your application; from a browser connect to "**https://**`< your-app-hostname >`**/hello?name=me**", and you should see something like:
 
 ```
   Hello me!
